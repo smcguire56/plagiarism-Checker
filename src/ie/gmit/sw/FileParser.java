@@ -1,4 +1,4 @@
-package ie.gmit.oo;
+package ie.gmit.sw;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -40,14 +40,13 @@ public class FileParser implements Runnable {
 				String words[] = line.split("\\s+");
 				
 				for (int i = 0; i < shingleSize; i++) {
-					//System.out.println(words[i].hashCode() + " word: " + words[i] + " file: " + f.hashCode());
+					System.out.println(words[i].hashCode() + " word: " + words[i] + " file: " + f.hashCode());
 					int shingle = words[i].hashCode();
 					Shingle s = new Shingle(f.hashCode(), shingle);
 
 					try {
 						b.put(s);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
