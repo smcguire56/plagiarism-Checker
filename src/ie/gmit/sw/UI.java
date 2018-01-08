@@ -8,7 +8,7 @@ public class UI {
 	private Scanner s= new Scanner(System.in);
 	private boolean keepMenuAlive = false;
 
-	public void Show() throws IOException {
+	public void Show() throws IOException, InterruptedException {
 		do {
 			System.out.println("Please enter Document 1's Name: ");
 			String doc1 = s.nextLine();
@@ -25,12 +25,25 @@ public class UI {
 			else {
 				t1 = new Thread(new FileParser(doc1 + ".txt"));
 			}
-			Thread t2 = new Thread(new FileParser(doc2 + ".txt"));
-			
+			Thread t2;
+			if(doc2.toLowerCase().contains("www.") 
+					|| doc2.toLowerCase().contains( ".com") 
+					|| doc2.toLowerCase().contains( "http")) {
+				System.out.println("url");
+				t2 = new Thread(new UrlParser(doc2));
+			}
+			else {
+				t2 = new Thread(new FileParser(doc2 + ".txt"));
+			}			
 		
 			System.out.println("starting threads");
 			t1.start();
 			t2.start();
+			
+			t1.join();
+			t2.join();
+			
+			System.out.println("done");
 		} while (keepMenuAlive);
 		
 	}

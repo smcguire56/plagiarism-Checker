@@ -1,0 +1,196 @@
+	OOP Main Assignment 
+
+Coupling - Interfaces and abstract classes
+
+Robust - Multiple threads running correctly
+
+//////////////////////////////////////////////
+	Command Line Menu
+
+. java util scanner
+
+. while(...) {
+  } Menu.java
+
+. public clss Launcher {
+	public void Launch(String f1, String f2) {
+		BlockingQueue<Shingle> q = new LinkedBlockingQueue<>(blockingQueueSize)	
+		// threadPoolSize	
+
+		Thread t1 = new Thread(new DocumentParser(f1, q, shingleSize, k), "T1");
+		Thread t2 = new Thread(new DocumentParser(f2, q, shingleSize, k), "T2");
+		// t3 for consumer
+		
+		t1.start();
+		t2.start();
+		
+		t1.join();
+		t2.join();
+	}
+  }
+
+. f1 and f2 - Names of the text files
+
+. Launcher - doc1, doc2, shingleSize, k - number of min hashes, blockingQueueSize
+
+. ./file.txt - relative (Have user enter the path names to files)
+
+///////////////////////////////////////////////////////////////////////////////////////////
+	Runner
+
+. public class Runner {
+	public statuc void main(S....) {
+		new Menu().show();
+	}
+  }
+
+/////////////////////////////////////////////
+	Shingle class	
+
+. public class Shingle {
+	private int docId;
+	private int hashcode;
+	//Constructor + Getters/Setters
+  }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+	Document Parser	
+. public class DocumentParser implements Runnable {
+	private BlockingQueue<Shingle>queue;
+	private String file;
+	private int shignleSize, k;
+	private Deque<String> buffer = new LinkedList<>();
+	private int docId;	
+
+	public DocumentParser(String file, BlockingQueue<Shingles>q, int shingleSize, int k) {
+		this.queue = q;
+		...
+		...
+	}
+	
+	public void run() {
+		BufferedReader br = new BufferedReader(new InputStringReader(new FileInputString(file)));
+		String line = null;
+		while((line = br.readLine())! = null) {
+			String uLine = line.toUpperCase();
+			String[] words = uLine.split(" "); // Can also take a regexpression
+			addWordsToBuffer(words);
+			Shingle s = getNextShingle();
+			queue.put(s); // Blocking method. Add is not a blocking method
+		}
+		flushBuffer();
+		br.close():
+	}// Run
+
+
+	private void addWordsToBuffer(String [] words) {
+		for(String s : words) {
+			buffer.add(s);
+		}
+  
+        }
+
+  	private Shingle getNextShingle() {
+		StringBuffer sb = new StringBuffer();
+		int counter = 0;
+		while(counter < shingleSize) {
+			if(buffer.peek() != null) {
+				sb.append(buffer.poll());
+				counter++;
+			}
+		}  
+		if (sb.length > 0) {
+			return(new Shingle(docId, sb.toString().hashCode());
+		}
+		else {
+			return(null);
+		}
+  	} // Next shingle
+	
+
+	private void flushBuffer() {
+		while(buffer.size() > 0) {
+			Sh(Single s = getNextShingle();
+			if(s != null) {
+				queue.put(s);
+			}
+			else {
+				queue.put(new Poison(docId, 0));
+			}
+		}
+	}
+
+        
+  }// Document Parser
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+public class Poison extends Shingle {
+	// Source -> Generate constructors FROM superclass	
+}
+
+///////////////////////////////////////////////////////////////////
+	Consumer
+
+public class Consumer implements Runnable {
+	private BlockingQueue<Shingle> queue;
+	private int k;
+	private int[] minhashes; // The random stuff
+	private Map<Integer, List<Integer>> map = new HashMap<>();
+	private ExecutorService pool;
+
+	public Consumer(BlockingQueue<Shingle>q, int k, int poolSize) {
+		this.queue = q;
+		this.k = k;
+		pool = Executors.fixedSizeThreadPool(poolSize);
+		init();
+	}
+
+	private void init() {
+		Random random = new Random();
+		minhashes = new int[k]; // k = 200 - 300
+		for(int i = 0; i < minhashes.length; i++) {
+			minhashes[i] = random.nextInt(0;
+		}
+	}// init
+	
+	public void run() {
+		int docCount = 2; // FIX THIS
+		while(docCount > 0) {
+			Shingle s = queue.take(); // Blocking method
+			if(s instanceof Poison) {
+				docCount--;
+			}
+			else {
+				pool.execute(new Runnable() {
+					for(int i = 0; i < minhashes.length; i++ {
+						int value = s.getHashCode()^minhashes[i]; // ^ - xor(Random generated key)
+						List<Integer> list = map.get(s.getDocId());
+						if(list == null) {					// Happens once for each document
+							list = new ArrayList<Integer>(k); // k - size   //
+							for (int j =0; j < list.length; j++) {		//
+								list.set(j > Integer.MAX_VALUE);	//
+							}						//
+							map.pool(s.getDocId(), list0;			//
+						}
+						else {
+							if(list.get(i) > value) {
+								list.set(i, value);
+							}	
+						}
+					}// For
+				}// Execute
+			}// Else
+		}// While
+	}// Run
+	
+}// Consumer
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+List<Integer> intersection = new ArrayList(a);
+intersection.retainAll(b);
+
+float jaccard = ((float)intersection.size()) / ((k*2) + ((float)intersection.size()));
+
+/////////////////////////////////////////////////////////////////////////////////////////

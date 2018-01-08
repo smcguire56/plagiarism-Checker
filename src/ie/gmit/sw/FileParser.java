@@ -14,7 +14,7 @@ public class FileParser implements Runnable {
 	private BlockingQueue<Shingle> b = new LinkedBlockingQueue<Shingle>(100);
 	private BlockingQueue<Shingle> queue = new LinkedBlockingQueue<Shingle>(100);
 
-	private int shingleSize = 1;
+	private int shingleSize = 1, k;
 		
 	public FileParser() {
 		super();
