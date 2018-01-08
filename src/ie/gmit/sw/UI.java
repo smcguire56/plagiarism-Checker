@@ -15,6 +15,8 @@ public class UI {
 			System.out.println("Please enter Document 2's Name: ");
 			String doc2 = s.nextLine();
 			
+			FileParser fp = new FileParser(doc1 + ".txt");
+			
 			Thread t1;
 			if(doc1.toLowerCase().contains("www.") 
 					|| doc1.toLowerCase().contains( ".com") 
@@ -23,7 +25,8 @@ public class UI {
 				t1 = new Thread(new UrlParser(doc1));
 			}
 			else {
-				t1 = new Thread(new FileParser(doc1 + ".txt"));
+				//t1 = new Thread(new FileParser(doc1 + ".txt"));
+				t1 = new Thread(fp);
 			}
 			Thread t2;
 			if(doc2.toLowerCase().contains("www.") 
@@ -35,15 +38,16 @@ public class UI {
 			else {
 				t2 = new Thread(new FileParser(doc2 + ".txt"));
 			}			
-		
+						
 			System.out.println("starting threads");
 			t1.start();
 			t2.start();
 			
 			t1.join();
 			t2.join();
-			
 			System.out.println("done");
+			System.out.println("Queue: " +fp.getQueue());
+
 		} while (keepMenuAlive);
 		
 	}

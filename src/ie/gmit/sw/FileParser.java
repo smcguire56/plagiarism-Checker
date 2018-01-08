@@ -6,22 +6,35 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class FileParser implements Runnable {
 	private File f;
-	private BlockingQueue<Shingle> b = new LinkedBlockingQueue<Shingle>(100);
-	private BlockingQueue<Shingle> queue = new LinkedBlockingQueue<Shingle>(100);
+	private BlockingQueue<Shingle> b = new LinkedBlockingQueue<Shingle>(1000);
 
-	private int shingleSize = 1, k;
-		
+	private BlockingQueue<Shingle> queue = new LinkedBlockingQueue<Shingle>(1000);
+
+	private Deque<String> buffer = new LinkedList<>();
+
+	private int shingleSize = 1, k , docId;
+
 	public FileParser() {
 		super();
 	}
-	
+
+	public FileParser(File file, BlockingQueue<Shingle> q, int shingleSize, int k) {
+		this.f = file;
+		this.queue = q;
+		this.shingleSize = shingleSize;
+		this.k = k;
+	}
+
 	public FileParser(String file) throws IOException {
-		this.f = new File(file);		
+		this.f = new File(file);
 		System.out.println(f);
 	}
 
@@ -36,25 +49,67 @@ public class FileParser implements Runnable {
 		String line = null;
 
 		try {
-			while((line = br.readLine()) != null) {
+			while ((line = br.readLine()) != null) {
 				String words[] = line.split("\\s+");
-				
+				addWordsToBuffer(words);
+				Shingle s = getNextShingle();
+				queue.put(s);
+				System.out.println(words[0] +", HashCode: " + words[0].hashCode() + ", file: " + f);
+
 				for (int i = 0; i < shingleSize; i++) {
 					System.out.println(words[i].hashCode() + " word: " + words[i] + " file: " + f.hashCode());
 					int shingle = words[i].hashCode();
-					Shingle s = new Shingle(f.hashCode(), shingle);
+					s = new Shingle(f.hashCode(), shingle);
 
 					try {
 						b.put(s);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-				}
-				
+				}				    
 			}
-		} catch (IOException e) {
+			
+			flushBuffer();
+			br.close();
+		} catch (IOException | InterruptedException e) {
 			System.out.println("File not found");
 		}
+	}
+	
+	private void flushBuffer() throws InterruptedException {
+		while(buffer.size() > 0) {
+			Shingle s = getNextShingle();
+			if(s != null) {
+				queue.put(s);
+			}
+			else {
+				queue.put(new Poison(docId, 0));
+			}
+		}
+	}
+
+	private Shingle getNextShingle() {
+		StringBuffer sb = new StringBuffer();
+		int counter = 0;
+		while(counter < shingleSize) {
+			if(buffer.peek() != null) {
+				sb.append(buffer.poll());
+				counter++;
+			}
+		}  
+		if (sb.length() > 0) {
+			return(new Shingle(docId, sb.toString().hashCode()));
+		}
+		else {
+			return(null);
+		}
+  	} // Next shingle
+
+	private void addWordsToBuffer(String[] words) {
+		for (String s : words) {
+			buffer.add(s);
+		}
+
 	}
 
 	@Override

@@ -8,7 +8,7 @@ import java.net.URL;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class UrlParser implements Runnable {
+public class UrlParser extends FileParser implements Runnable {
 	private URL myUrl;
 	private BlockingQueue<Shingle> b = new LinkedBlockingQueue<Shingle>();
 	private int shingleSize = 1;
@@ -35,8 +35,9 @@ public class UrlParser implements Runnable {
 	            //System.out.println(inputLine);
 	            String words[] = inputLine.split("\\s+");
 	            
-	            for (int i = 0; i < shingleSize; i++) {
-					System.out.println(words[i].hashCode() + " word: " + words[i] + " Url: " + myUrl.hashCode());
+	            for (int i = 0; i < words.length; i++) {
+					//System.out.println(words[i].hashCode() + " word: " + words[i] + " Url: " + myUrl.hashCode());
+	            	System.out.printf("%s ", words[i]);
 					int shingle = words[i].hashCode();
 					Shingle s = new Shingle(myUrl.hashCode(), shingle);
 				
@@ -47,6 +48,7 @@ public class UrlParser implements Runnable {
 						e.printStackTrace();
 					}
 	            }
+	            System.out.println();
 	 
 	        }
 	        in.close();
