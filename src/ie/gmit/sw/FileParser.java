@@ -9,88 +9,87 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.concurrent.BlockingQueue;
 
-public class FileParser implements Runnable {
-
-	private BlockingQueue<Shingle> queue;
+public class FileParser implements Runnable{
+	private String file;
+	private int shingleSize;
+	private int k;
+	private BlockingQueue<Shingle> q;
 	private Deque<String> buffer = new LinkedList<>();
-	private String f;
-	private int shingleSize, docId;
-
-	public FileParser() {
+	private int docId;
+	
+	public FileParser(String file, int shingleSize, int k, BlockingQueue<Shingle> q,int docId) {
 		super();
-	}
-
-	public FileParser(String doc1, BlockingQueue<Shingle> queue, int shingleSize, int docId) {
-		this.f = doc1;
-		this.queue = queue;
+		this.file = file;
 		this.shingleSize = shingleSize;
+		this.k = k;
+		this.q = q;
 		this.docId = docId;
 	}
-
-	@Override
+	
 	public void run() {
-		BufferedReader br = null;
-		String line = null;
-
 		try {
-			br = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
-			while ((line = br.readLine()) != null) {
-				if (line.length() > 0) {
-					line = line.toUpperCase();
-					String words[] = line.split("\\s+");
+			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+			String line = null;
+			while((line = br.readLine())!= null) {
+				if(line.length()>0) {
+					String uLine = line.toUpperCase();
+					String [] words = uLine.split("\\s+");
 					addWordsToBuffer(words);
 					Shingle s = getNextShingle();
-					queue.put(s);
-
-					System.out.println(words[0] + ", HashCode: " + words[0].hashCode() + ", file: " + f);
+					q.put(s);
 				}
 			}
-
-			flushBuffer();
+		
 			br.close();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+			flushBuffer();
+			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
-
-	private void flushBuffer() throws InterruptedException {
-		while (buffer.size() > 0) {
-			Shingle s = getNextShingle();
-			if (s != null) {
-				queue.put(s);
-			} else {
-				queue.put(new Poison(docId, 0));
-			}
-		}
-	}
-
-	private Shingle getNextShingle() {
-		StringBuffer sb = new StringBuffer();
-		int counter = 0;
-		while (counter < shingleSize) {
-			if (buffer.peek() != null) {
-				sb.append(buffer.poll());
-				counter++;
-			} else {
-				counter = shingleSize;
-			}
-		}
-		if (sb.length() > 0) {
-			return (new Shingle(docId, sb.toString().hashCode()));
-		} else {
-			return (null);
-		}
-	}
-
+	
 	private void addWordsToBuffer(String[] words) {
-		for (String s : words) {
+		for (String s: words) {
 			buffer.add(s);
 		}
-
 	}
+	
+	private Shingle getNextShingle() {
+		StringBuilder sb = new StringBuilder();
+		int counter = 0;
+		while(counter < shingleSize) {
+			if(buffer.peek()!=null) {
+				sb.append(buffer.poll());
+				counter++;
+			}
+			else {
+				counter = shingleSize;
+			}
+			
+		}
+		if(sb.length() > 0) {
+			return (new Shingle(docId,sb.toString().hashCode()));
+		}
+		else {
+			return null;
+		}
+		
+	}
+	
+	private void flushBuffer() throws InterruptedException{
+
+		while(buffer.size() > 0) {
+			Shingle s = getNextShingle();
+			if(s != null) {
+				q.put(s);
+			}
+		}
+		q.put(new Poison(docId, 0));
+	}
+	
 
 }
