@@ -2,21 +2,21 @@ package ie.gmit.sw;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Consumer implements Runnable {
 	private BlockingQueue<Shingle> queue;
 	private int k;
-	private int[] minhashes; // The random stuff
-	private Map<Integer, List<Integer>> map = new HashMap<Integer, List<Integer>>();
+	private int[] minhashes;
+	private Map<Integer, List<Integer>> map = new ConcurrentHashMap<Integer, List<Integer>>();
 	private ExecutorService pool;
-	private Shingle s = null;
 
 	public Consumer(BlockingQueue<Shingle> q, int k, int poolSize) {
 		this.queue = q;
 		this.k = k;
-		setPool(Executors.newFixedThreadPool(poolSize));
+		pool = Executors.newFixedThreadPool(poolSize);
 		init();
 	}
 
@@ -24,80 +24,48 @@ public class Consumer implements Runnable {
 		Random random = new Random();
 		minhashes = new int[k]; // k = 200 - 300
 		for (int i = 0; i < minhashes.length; i++) {
-			minhashes[i] = random.nextInt(0);
+			minhashes[i] = random.nextInt();
 		}
-	}// init
+	}
 
 	public void run() {
-		int docCount = 2; // FIX THIS
+		int docCount = 2;
 		while (docCount > 0) {
+			Shingle s;
 			try {
 				s = queue.take();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} // Blocking method
+				if (s instanceof Poison) {
+					docCount--;
+				} else {
+					pool.execute(new Runnable() {
+						@Override
+						public void run() {
+							List<Integer> list = map.get(s.getDocid());
 
-			if (s instanceof Poison) {
-				docCount--;
-			} else {
-				pool.execute(new Runnable() {
-
-					@Override
-					public void run() {
-						int docCount = 2;// change
-						while (docCount > 0) {
-							try {
-								Shingle s = queue.take();
-								// do poison check
-								if (s.getShingleHashCode() == -99) {
-									docCount--;
+							for (int i = 0; i < minhashes.length; i++) {
+								int value = s.getShingleHashCode() ^ minhashes[i];
+								if (list == null) {
+									list = new ArrayList<Integer>(Collections.nCopies(k, Integer.MAX_VALUE));
+									map.put(s.getDocid(), list);
 								} else {
-									pool.execute(new Runnable() {
-										public void run() {
-											List<Integer> list = map.get(s.getDocid());
-											
-											for (int i = 0; i < minhashes.length; i++) {
-												int value = s.getShingleHashCode() ^ minhashes[i];
-												if (list == null) {
-													list = new ArrayList<Integer>(Collections.nCopies(k, Integer.MAX_VALUE));
-													map.put(s.getDocid(), list);
-												} else 
-												{
-													if (list.get(i) > value) 
-													{
-														list.set(i, value);
-													}
-												}
-											}
-										}
-									});
+									if (list.get(i) > value)
+										list.set(i, value);
 								}
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
 							}
+							map.put(s.getDocid(), list);
 						}
-					}
-				});
+					});
+				}
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
 
-			} // Else
-		} // While
-	}// Run
+		}
 
-	public ExecutorService getPool() {
-		return pool;
-	}
+		List<Integer> intersection = map.get(1);
+		intersection.retainAll(map.get(2));
+		float jacquared = (float) intersection.size() / (k * 2 - (float) intersection.size());
 
-	public void setPool(ExecutorService pool) {
-		this.pool = pool;
-	}
-
-	public Map<Integer, List<Integer>> getMap() {
-		return map;
-	}
-
-	public void setMap(Map<Integer, List<Integer>> map) {
-		this.map = map;
-	}
-
-}// Consumer
+		System.out.println("Jacquared Index: " + jacquared);
+	}// run
+}// Consumer class

@@ -15,7 +15,7 @@ public class Shingle {
 	public Shingle() {
 		super();
 	}
-	
+
 	public int getDocid() {
 		return docid;
 	}
@@ -35,7 +35,7 @@ public class Shingle {
 	public int[] getMinHashSet(int size) {
 		Random r = new Random();
 		int[] hashes = new int[size];
-		
+
 		for (int i = 0; i < size; i++) {
 			hashes[i] = r.nextInt();
 		}

@@ -1,12 +1,15 @@
 package ie.gmit.sw;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Scanner;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class UI {
-	private Scanner s= new Scanner(System.in);
+	private Scanner s = new Scanner(System.in);
 	private boolean keepMenuAlive = false;
+
+	private BlockingQueue<Shingle> q = new LinkedBlockingQueue<Shingle>(100);
 
 	public void Show() throws IOException, InterruptedException {
 		do {
@@ -14,42 +17,42 @@ public class UI {
 			String doc1 = s.nextLine();
 			System.out.println("Please enter Document 2's Name: ");
 			String doc2 = s.nextLine();
-			
-			FileParser fp = new FileParser(doc1 + ".txt");
-			
-			Thread t1;
-			if(doc1.toLowerCase().contains("www.") 
-					|| doc1.toLowerCase().contains( ".com") 
-					|| doc1.toLowerCase().contains( "http")) {
-				System.out.println("url");
-				t1 = new Thread(new UrlParser(doc1));
+			System.out.println("Please enter k size: ");
+			int k = s.nextInt();
+			System.out.println("Please enter shingle size: ");
+			int shingleSize = s.nextInt();
+			System.out.println("Please enter thread pool size: ");
+			int poolSize = s.nextInt();
+
+			if (!doc1.contains(".txt")) {
+				doc1 += ".txt";
 			}
-			else {
-				//t1 = new Thread(new FileParser(doc1 + ".txt"));
-				t1 = new Thread(fp);
+
+			if (!doc2.contains(".txt")) {
+				doc2 += ".txt";
 			}
-			Thread t2;
-			if(doc2.toLowerCase().contains("www.") 
-					|| doc2.toLowerCase().contains( ".com") 
-					|| doc2.toLowerCase().contains( "http")) {
-				System.out.println("url");
-				t2 = new Thread(new UrlParser(doc2));
-			}
-			else {
-				t2 = new Thread(new FileParser(doc2 + ".txt"));
-			}			
-						
-			System.out.println("starting threads");
+
+			Thread t1 = new Thread(new FileParser(doc1, q, shingleSize, 1));
+			Thread t2 = new Thread(new FileParser(doc2, q, shingleSize, 2));
+			Thread t3 = new Thread(new Consumer(q, k, poolSize));
+
 			t1.start();
 			t2.start();
-			
+			t3.start();
+
 			t1.join();
 			t2.join();
-			System.out.println("done");
-			System.out.println("Queue: " +fp.getQueue());
-
+			t3.join();
 		} while (keepMenuAlive);
-		
+
+	}
+	
+	public boolean isKeepMenuAlive() {
+		return keepMenuAlive;
+	}
+
+	public void setKeepMenuAlive(boolean keepMenuAlive) {
+		this.keepMenuAlive = keepMenuAlive;
 	}
 
 }
