@@ -2,8 +2,6 @@ package ie.gmit.sw;
 
 import java.io.IOException;
 import java.util.Scanner;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class UI {
 	private Scanner s = new Scanner(System.in);
