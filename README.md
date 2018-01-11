@@ -20,16 +20,21 @@ Starting new Document Similarity Checker
 
 
 Please enter Document 1's Name:
+
 war
+
 Please enter Document 2's Name: 
 
 war2
+
 Please enter k size:
 
 500
+
 Please enter shingle size: 
 
 3
+
 Please enter thread pool size: 
 
 300
