@@ -1,11 +1,24 @@
+/**
+ * 
+ * @author g00330886
+ * @author Sean McGuire
+ * 
+ */
+
 package ie.gmit.sw;
 
-import java.util.Random;
-
 public class Shingle {
+	// declare local variables and set to 0.
 	private int docid = 0;
 	private int shingleHashCode = 0;
 
+	/**
+	 * 
+	 * @param docid
+	 *            doc id
+	 * @param shingleHashCode
+	 *            hashcode of shingles
+	 */
 	public Shingle(int docid, int shingleHashCode) {
 		super();
 		this.docid = docid;
@@ -16,35 +29,37 @@ public class Shingle {
 		super();
 	}
 
+	/**
+	 * 
+	 * @return docid
+	 */
 	public int getDocid() {
 		return docid;
 	}
 
+	/**
+	 * 
+	 * @param docid
+	 *            sets the doc id
+	 */
 	public void setDocid(int docid) {
 		this.docid = docid;
 	}
 
+	/**
+	 * 
+	 * @return hashcode value returns
+	 */
 	public int getShingleHashCode() {
 		return shingleHashCode;
 	}
 
+	/**
+	 * 
+	 * @param shingleHashCode
+	 *            sets the shingle hash code
+	 */
 	public void setShingleHashCode(int shingleHashCode) {
 		this.shingleHashCode = shingleHashCode;
 	}
-
-	public int[] getMinHashSet(int size) {
-		Random r = new Random();
-		int[] hashes = new int[size];
-
-		for (int i = 0; i < size; i++) {
-			hashes[i] = r.nextInt();
-		}
-		return hashes;
-	}
-
-	public boolean equals(Object o) {
-		Shingle other = (Shingle) o;
-		return this.shingleHashCode == other.shingleHashCode;
-	}
-
 }

@@ -1,5 +1,3 @@
-# plagiarism-Checker
-
 plagiarism Checker	G00330886	Sean McGuire
 ====================================================
 
@@ -30,6 +28,5 @@ Please enter thread pool size:
 300
 Jaccard: 96.07843 %.
 Checks: 108583876 times.
-
 
 
